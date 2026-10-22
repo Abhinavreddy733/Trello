@@ -3,6 +3,7 @@ import z from 'zod'
 import { AuthMiddleware, sendResponse, signToken } from '../middleware';
 import { ResponseStatus } from '../responseStatus';
 import { prisma } from '../db';
+import { handlePrismaError } from '../handlePrismaError';
 
 const router = express.Router();
 
@@ -39,6 +40,7 @@ router.post('/signup',AuthMiddleware, async(req,res) => {
         return sendResponse(res,ResponseStatus.SUCCESS)
 
     } catch(err) {
+        if(handlePrismaError(err, res)) return
         return sendResponse(res, ResponseStatus.INTERNAL_ERROR, err)
     }
 })
@@ -67,6 +69,7 @@ router.post('/signin',AuthMiddleware, async(req,res) => {
         return sendResponse(res,ResponseStatus.SUCCESS)
 
     } catch(err) {
+        if(handlePrismaError(err, res)) return
         return sendResponse(res, ResponseStatus.INTERNAL_ERROR, err)
     }
 })

@@ -8,8 +8,14 @@ export const ResponseStatus = {
   UNAUTHORIZED:        { status: 401, code: 'UNAUTHORIZED',        message: 'Authentication is required.' },
   FORBIDDEN:           { status: 403, code: 'FORBIDDEN',           message: 'You do not have permission to access this resource.' },
   NOT_FOUND:           { status: 404, code: 'NOT_FOUND',           message: 'The requested resource was not found.' },
+  CONFLICT:            { status: 409, code: 'CONFLICT',            message: 'The resource already exists.' },
 
   INTERNAL_ERROR:      { status: 500, code: 'INTERNAL_ERROR',      message: 'Something went wrong. Please try again later.' },
+  SERVICE_UNAVAILABLE: { status: 503, code: 'SERVICE_UNAVAILABLE', message: 'Service temporarily unavailable.' },
 } as const;
 
-export type ResponseStatusType = (typeof ResponseStatus)[keyof typeof ResponseStatus];
+export type ResponseStatusType = {
+  readonly status: number;
+  readonly code: string;
+  readonly message: string;
+};
