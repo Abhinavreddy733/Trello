@@ -1,7 +1,7 @@
-// // This is your Prisma schema file,
-// // learn more about it in the docs: https://pris.ly/d/prisma-schema
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// // Get a free hosted Postgres database in seconds: `npx create-db`
+// Get a free hosted Postgres database in seconds: `npx create-db`
 
 generator client {
   provider = "prisma-client"
@@ -11,136 +11,6 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
-
-// // Tables - 
-// // Users Table
-// // Organizations Table
-// // Membership Table
-// // Section Table
-// // Issue Table
-// // Boards Table
-
-// enum OrgRole {
-//   ADMIN
-//   MEMBER
-// }
-
-// enum BoardRole {
-//   ADMIN
-//   MEMBER
-// }
-
-
-// model User {
-//   id String @id @default(uuid())
-//   email String @unique
-//   username String
-//   passwordHash String
-//   createdAt DateTime @default(now())
-//   updatedAt DateTime @default(now())
-
-//   memberships Membership[]
-//   boardMembers BoardMember[]
-//   createdIssues Issue[] @relation("IssueCreatedBy")
-//   assignedIssues IssueAssignee[] @relation("Assignee")
-//   assignmentsMade IssueAssignee[] @relation("Assigner")
-// }
-
-// model Organization {
-//   id String @id @default(uuid())
-//   adminId String
-//   name String
-//   createdAt DateTime @default(now())
-
-//   memberships Membership[]
-//   boards Board[]
-
-//   @@unique([adminId, name ])
-// }
-
-// model Membership  {
-//   id String @id @default(uuid())
-//   userId String
-//   orgId String
-//   role OrgRole
-//   joinedAt DateTime @default(now())
-//   user User @relation(fields: [userId], references: [id])
-//   organization Organization @relation(fields: [orgId], references: [id])
-
-//   @@unique([userId, orgId])
-//   @@index([orgId])
-// }
-
-// model Board {
-//   id String @id @default(uuid())
-//   name String
-//   orgId String 
-//   createdAt DateTime @default(now())
-//   updatedAt DateTime @default(now())
-//   organization Organization @relation(fields: [orgId], references: [id])
-
-//   sections Section[]
-//   members BoardMember[]
-
-//   @@unique([orgId, name])
-// }
-
-// model BoardMember {
-//   id String @id @default(uuid())
-//   userId String
-//   boardId String 
-//   role BoardRole
-//   joinedAt DateTime @default(now())
-//   user User @relation(fields: [userId], references: [id])
-//   board Board @relation(fields: [boardId], references: [id])
-
-//   @@unique([userId, boardId])
-//   @@index([userId])
-// }
-
-// model Section {
-//   id String @id @default(uuid())
-//   name String 
-//   boardId String
-//   board Board @relation(fields: [boardId], references: [id])
-//   position Int
-
-//   Issues Issue[]
-
-//   @@unique([boardId, name])
-//   @@index([boardId, position])
-// }
-
-// model Issue {
-//   id String @id @default(uuid())
-//   name String 
-//   description String?
-//   position Int
-//   sectionId String
-//   createdById String 
-//   dueDate DateTime?
-//   createdAt DateTime @default(now())
-//   updatedAt DateTime @default(now())
-
-//   section Section @relation(fields: [sectionId], references: [id])
-//   user User @relation("IssueCreatedBy", fields: [createdById], references: [id])
-
-//   issueAssignee IssueAssignee[]
-
-//   @@unique([sectionId, name])
-//   @@index([sectionId, position])
-// }
-
-// model IssueAssignee {
-//   id String @id @default(uuid()) 
-//   userId String
-//   issueId String
-//   assignedById String?
-
-//   issue Issue @relation( fields: [issueId], references: [id] )
-//   user User @relation("Assignee", fields: [userId], references: [id])
-//   assignedBy User? @relation("Assigner", fields: [assignedById], references: [id])
-// }
 
 enum OrgRole {
   ADMIN
@@ -152,125 +22,120 @@ enum BoardRole {
   MEMBER
 }
 
-
 model User {
-  id String @id @default(uuid())
-  email String @unique
-  username String
+  id           String   @id @default(uuid())
+  email        String   @unique
+  username     String
   passwordHash String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  memberships Membership[]
-  boardMembers BoardMember[]
-  sections Section[] @relation("createdBy")
-  createdIssues Issue[] @relation("IssueCreator")
-  assignedIssues IssueAssignee[] @relation("Assignee")
-  assignementsMade IssueAssignee[] @relation("Assigner")
- }
+  ownedOrgs        Organization[]  @relation("OrgOwner")
+  memberships      Membership[]
+  boardMembers     BoardMember[]
+  createdSections  Section[]       @relation("SectionCreator")
+  createdIssues    Issue[]         @relation("IssueCreator")
+  assignedIssues   IssueAssignee[] @relation("Assignee")
+  assignmentsMade  IssueAssignee[] @relation("Assigner")
+}
 
 model Organization {
-  id String @id @default(uuid())
-  name String 
-  userId String
+  id        String   @id @default(uuid())
+  name      String
+  ownerId   String
   createdAt DateTime @default(now())
 
-  membership Membership[]
-  boards Board[]
+  owner       User         @relation("OrgOwner", fields: [ownerId], references: [id], onDelete: Restrict)
+  memberships Membership[]
+  boards      Board[]
 
-  @@unique([userId, name])
+  @@unique([ownerId, name])
 }
 
 model Membership {
-  id String @id @default(uuid())
-  userId String 
-  orgId String 
-  role OrgRole
+  id       String   @id @default(uuid())
+  userId   String
+  orgId    String
+  role     OrgRole
   joinedAt DateTime @default(now())
 
-  user User @relation(fields: [userId],references: [id])
-  organization Organization @relation(fields: [orgId], references: [id])
+  user         User         @relation(fields: [userId], references: [id], onDelete: Restrict)
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Restrict)
 
   @@unique([userId, orgId])
   @@index([orgId])
 }
 
 model Board {
-  id String @id @default(uuid())
-  name String
-  orgId String 
+  id        String   @id @default(uuid())
+  name      String
+  orgId     String
   createdAt DateTime @default(now())
-  organization Organization @relation(fields: [orgId], references: [id])
 
+  organization Organization  @relation(fields: [orgId], references: [id], onDelete: Restrict)
   boardMembers BoardMember[]
-  sections Section[]
+  sections     Section[]
 
   @@unique([orgId, name])
 }
 
 model BoardMember {
-  id String @id @default(uuid())
-  userId String
-  boardId String
-  role BoardRole
-  joinedAt DateTime @default(now())
+  id       String    @id @default(uuid())
+  userId   String
+  boardId  String
+  role     BoardRole
+  joinedAt DateTime  @default(now())
 
-  user User @relation(fields: [userId], references: [id])
-  board Board @relation(fields: [boardId], references: [id])
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  board Board @relation(fields: [boardId], references: [id], onDelete: Cascade)
 
   @@unique([boardId, userId])
   @@index([userId])
 }
 
 model Section {
-  id String @id @default(uuid())
-  name String
-  position Int
-  boardId String
-  createdBy String
-  createdAt DateTime @default(now())
+  id          String   @id @default(uuid())
+  name        String
+  position    Int
+  boardId     String
+  createdById String?
+  createdAt   DateTime @default(now())
 
-  board Board @relation(fields: [boardId], references: [id])
-  user User @relation("createdBy", fields: [createdBy], references: [id])
-
-  issues Issue[]
+  board     Board  @relation(fields: [boardId], references: [id], onDelete: Restrict)
+  createdBy User?  @relation("SectionCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  issues    Issue[]
 
   @@unique([boardId, name])
 }
 
 model Issue {
-  id String @id @default(uuid())
-  name String
-  description String
-  sectionId String
-  createdById String
-  position Int
-  createdAt DateTime @default(now())
-  endTIme DateTime
+  id          String    @id @default(uuid())
+  name        String
+  description String?
+  sectionId   String
+  createdById String?
+  position    Int
+  dueDate     DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
-  section Section @relation( fields: [sectionId], references: [id])
-  user User @relation("IssueCreator", fields: [createdById], references: [id])
+  section   Section         @relation(fields: [sectionId], references: [id], onDelete: Restrict)
+  createdBy User?           @relation("IssueCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  assignees IssueAssignee[]
 
-  assignedIssues IssueAssignee[]
-
-  @@unique([sectionId, name])
-  @@index([createdById])
+  @@index([sectionId, position])
 }
 
 model IssueAssignee {
-  id String @id @default(uuid())
-  userId String
-  assignedById String
-  issueId String
+  issueId      String
+  userId       String
+  assignedById String?
   assignedAt   DateTime @default(now())
 
-  issue Issue @relation(fields: [issueId], references: [id])
-  user User @relation("Assignee", fields: [userId], references: [id])
-  assignedBy User @relation("Assigner", fields: [assignedById], references: [id] )
+  issue      Issue @relation(fields: [issueId], references: [id], onDelete: Restrict)
+  user       User  @relation("Assignee", fields: [userId], references: [id], onDelete: Restrict)
+  assignedBy User? @relation("Assigner", fields: [assignedById], references: [id], onDelete: Restrict)
 
-  @@unique([userId, issueId])
-  @@index([assignedById])
+  @@id([issueId, userId])
+  @@index([userId])
 }
-
-
-
